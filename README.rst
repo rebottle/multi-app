@@ -1,5 +1,6 @@
 Multi-App sites with Bottle.
 ============================
+
 The Perfect Framework?
 -----------------------
 
@@ -16,10 +17,13 @@ OK, bottle is perfect for a simple site.  What holds bottle back for a more comp
 Multi App Sites
 ---------------
 
-Lets consider a website comprised of smaller 'subapps'. First Question: what would Utopia look like?  Second Question: How close does bottle get to utopia?
+Lets consider a website comprised of smaller 'subapps'.
+First Question: what would Utopia look like?
+Second Question: How close does bottle get to utopia?
 
 Utopia.
 +++++++
+
 Key Points:
   * The structure for multiple apps has zero impact on single app websites.
   * An app can be built as single app or a 'subapp' component of a multi app site without code changes
@@ -27,8 +31,7 @@ Key Points:
   * apps could be nested to any level
   * the complete system is git (or other VCS) friendly
 
-In Practice:
-this would imply something like the following folder structure::
+In Practice this would imply something like the following folder structure::
 
     App (folder)
       file1
@@ -47,11 +50,18 @@ this would imply something like the following folder structure::
           view_file1
     etc
 
-The possible contentious point is having statics and views in eash sub_app rather than in their own folder trees. The above is an 'app tree' approach, and I will call the alternative a views/static tree approach. I suggest that the logical structure above is utopia for git and development, but the multi app system should be flexible and support separate image/static trees, even if not an automatic default.  Single file structure can support both trees through symlinks, but both structures should be workable with a multi app system both with and without the use of symlinks.
+The possible contentious point is having statics and views in eash sub_app rather than in their own folder trees.
+The above is an 'app tree' approach, and I will call the alternative a views/static tree approach.
+I suggest that the logical structure above is utopia for git and development,
+but the multi app system should be flexible and support separate image/static trees,
+even if not an automatic default.
+Single file structure can support both trees through symlinks, but both structures should be workable
+with a multi app system both with and without the use of symlinks.
 
 So Far With Bottle.
 ++++++++++++++++++++
 
- Routes.
- *******
- Routes using @app.route() can take a prefix.  This means a sub app can with no recoding adopt a url prefix.
+Routes.
+*******
+ 
+Routes using @app.route() can take a prefix.  This means a sub app can with no recoding adopt a url prefix.
