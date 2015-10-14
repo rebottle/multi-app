@@ -64,7 +64,7 @@ So Far With Bottle.
 The 'app' structure.
 ********************
 Applications in bottle are instances of the 'Bottle' class. 
-Each instance of the bottle module has an AppStack, which is a list of Bottle instances, or a list list of 'apps'.
+Each instance of the bottle module has an AppStack, which is a list of Bottle instances, or a list of 'apps'.
 
 Both 'app' and 'default_app' reference this AppStack. Import either 'app' or 'default_app' to access the AppStack instance.
 This can be somewhat confusing having 'app' as a list as much documentation and general ideas these days descibes an 'app' as an instance of Bottle.
