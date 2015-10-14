@@ -164,7 +164,7 @@ Main file::
     from bottle import route,mount,run,app as apps
     from subapp import myapp as subapp
     
-    myapp=apps.push()
+    myapp=apps.push() #note if both files used apps(), they would share the same app
     
     @route('/')
     @route('/home')
