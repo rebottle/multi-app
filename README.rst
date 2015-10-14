@@ -89,8 +89,11 @@ The 'push' method, appends a new Bottle instance to the list.
 Default Bottle instance.
 ************************
 The bottle module not only instances an AppStack() with both the names 'app' and 'default_app',
-one instance of bottle is pre-added to the AppStack.
-app() or default_app()  both retrive the last app added to the AppStack, which will initially be the
+also one instance of a Bottle object (or app) is pre-added to the AppStack.
+Note using this 'pre-added' instance of Bottle() is dangerous,
+because serveral modules can accidentally use the same instance.
+For the AppStack, there *is* only on instance so no problem.
+app() or default_app()  both retrieve the last app added to the AppStack, which will initially be the
 Bottle instance created internally to the bottle module.
 @route etc decorators will by default use
 the last Bottle instance added to the AppStack list.  If using two apps in the same module, @route etc
@@ -102,15 +105,17 @@ the automatically created app until a new app is instanced e.g. ::
     @route('/page')  # works with default app
     def pageapp1():
         pass
-    app1=apps()  #save default app
-    newapp = Bottle()
-    @route('/page1')  #route using lass app in AppStack which is still app1
+        
+    app1=apps()  #save default app -you need to be sure only you will use this!
+    newapp = Bottle()  #use 'newapp = apps.push()' to do all steps at once 
+    
+    @route('/page1')  #route using last app in AppStack which is still app1
     def page1(): pass
     
     @newapp.route('/page2') #explict route for 'newapp'
     def page2():pass
     
-    apps.push(newapp)  #add 'newapp' to AppStack, whihc will make newapp now the default
+    apps.push(newapp)  #add 'newapp' to AppStack, which will make newapp now the default
     
     @route('/page2b')  #another route for newapp
     @newapp.route('/page2c') #explict route for same app
@@ -147,7 +152,7 @@ I am unsure why as it would seem using 'mount' for both cases would be elegant.
     #sub app
     from bottle import route,app as apps
     
-    myapp= apps()
+    myapp= apps.push() 
    
     @route('/main')
     def main():
@@ -159,7 +164,7 @@ Main file::
     from bottle import route,mount,run,app as apps
     from subapp import myapp as subapp
     
-    myapp=apps()
+    myapp=apps.push()
     
     @route('/')
     @route('/home')
@@ -170,8 +175,10 @@ Main file::
     myapp.run()
     
 This is simple structure allows for a separate python program for each 'app'.
-Currently there is one known problem when the 'subapp' has a 'catchall' using  the path filter
-<path:path>.  The path filter in the subapp will match even without the '/sub' prefix. 
+
+Note:  using 'apps.push()' in place of 'apps()'  every time means that
+there is one unused Bottle instance on the AppStack. But that is better than
+accidentally using that one automatic Bottle() twice.
 
 What about folders?
 +++++++++++++++++++
