@@ -61,7 +61,128 @@ with a multi app system both with and without the use of symlinks.
 So Far With Bottle.
 ++++++++++++++++++++
 
-Routes.
-*******
- 
-Routes using @app.route() can take a prefix.  This means a sub app can with no recoding adopt a url prefix.
+The 'app' structure.
+********************
+Applications in bottle are instances of the 'Bottle' class. 
+Each instance of the bottle module has an AppStack, which is a list of Bottle instances, or a list list of 'apps'.
+
+Both 'app' and 'default_app' reference this AppStack. Import either 'app' or 'default_app' to access the AppStack instance.
+This can be somewhat confusing having 'app' as a list as much documentation and general ideas these days descibes an 'app' as an instance of Bottle.
+Each one is an app in most language and I recommend importing 'app' as 'apps'.
+
+The AppStack is actually a class based on list, but with two extra methods, 'call' and 'push'.  So app[0]  (or default_app[0]) would
+retrieve the fist app in the list, and so on.  Using the call method 'app()' is identical to app[-1] and retries the last app in the list.
+The 'push' method, appends a new Bottle instance to the list.
+::
+
+  from bottle import app apps, default_app # these are two references to the same 'AppStack' list of Bottle instances
+  from bottle import Bottle  # the class to instance 'apps'
+  
+  app[0]  #retrieve the first Bottle instance in the Appstack list
+  app[-1] #retrive the last Bottle instance in the list
+  app()  # same as app[-1]
+  myApp = Bottle()  #instance a new Bottle application
+  app.push(myApp)  #add the new application to the AppStack list
+  myApp2 = app.push( Bottle() )  #create a Bottle instance and add to the app list
+  myApp3 = app.push()  # same as above.  push() with no parameter instance and pushes a new Bottle instance
+
+Default Bottle instance.
+************************
+The bottle module not only instances an AppStack() with both the names 'app' and 'default_app',
+one instance of bottle is pre-added to the AppStack.
+app() or default_app()  both retrive the last app added to the AppStack, which will initially be the
+Bottle instance created internally to the bottle module.
+@route etc decorators will by default use
+the last Bottle instance added to the AppStack list.  If using two apps in the same module, @route etc
+will by default work with
+the automatically created app until a new app is instanced e.g. ::
+
+    from bottle import Bottle, route, app as apps
+    
+    @route('/page')  # works with default app
+    def pageapp1():
+        pass
+    app1=apps()  #save default app
+    newapp = Bottle()
+    @route('/page1')  #route using lass app in AppStack which is still app1
+    def page1(): pass
+    
+    @newapp.route('/page2') #explict route for 'newapp'
+    def page2():pass
+    
+    apps.push(newapp)  #add 'newapp' to AppStack, whihc will make newapp now the default
+    
+    @route('/page2b')  #another route for newapp
+    @newapp.route('/page2c') #explict route for same app
+    def page2b():
+        pass
+        
+    app1.route('/anotherpage')  #explicit route for first app
+    def pageNot2b():
+        pass
+        
+        
+
+Combining Apps and Routes.
+**************************
+So even in a single file, it is possible to work with multiple bottle instances or 'apps'. But only one app is actually 'run',
+so it is necessary to combine these apps to run collectively.
+
+Bottle provides two ways of combining apps::
+
+    mainapp.mount('/subapp',subapp1)  #mount subapp with '/subapp' as a path prefix
+    mainapp.merge(subapp2)  #mount subapp2 at site root
+  
+If 'subapp1' has a @route('main')  then with the 'mount' above it this 'main' route would become '/subapp/main'.
+::
+
+    mainapp.mount('/',subapp)
+        and
+    mainapp.merge(subapp)
+
+Would seem to be the same, however using 'mount' in this case is forbidden and 'merge' is required.
+I am unsure why as it would seem using 'mount' for both cases would be elegant.
+::
+
+    #sub app
+    from bottle import route,app as apps
+    
+    myapp= apps()
+   
+    @route('/main')
+    def main():
+        return 'the main app page'
+
+Main file::
+
+    #main app
+    from bottle import route,mount,run,app as apps
+    from subapp import myapp as subapp
+    
+    myapp=apps()
+    
+    @route('/')
+    @route('/home')
+    def home():
+        return 'site home page'
+        
+    myapp.mount('/sub')
+    myapp.run()
+    
+This is simple structure allows for a separate python program for each 'app'.
+Currently there is one known problem when the 'subapp' has a 'catchall' using  the path filter
+<path:path>.  The path filter in the subapp will match even without the '/sub' prefix. 
+
+What about folders?
++++++++++++++++++++
+The previous section covers all that is needed for multiple applications
+where all files share the same folders.  Which effectively means the 'apps' are developed together.
+Python files in the same folder, all statics in the same statics folder and all views in the same views folder.
+However the 'Utopia' was to allow the subapp to live in its
+own folder with self contained static and views folders.
+Simply adding an __init__.py to the sub app and adjusting the import allows the sub app to live in its own folder
+and a .gitignore can even keep the projects separate if you use Git.
+
+But what about view and statics?
+********************************
+to be added
