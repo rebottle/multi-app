@@ -149,20 +149,20 @@ Would seem to be the same, however using 'mount' in this case is forbidden and '
 I am unsure why as it would seem using 'mount' for both cases would be elegant.
 ::
 
-    #sub app
+    #hello app
     from bottle import route,app as apps
     
     myapp= apps.push() 
    
-    @route('/main')
-    def main():
-        return 'the main app page'
+    @route('/hello')
+    def hello():
+        return 'the main hello app page'
 
 Main file::
 
-    #main app
+    #main app  - helloapp is used as a sub app
     from bottle import route,mount,run,app as apps
-    from subapp import myapp as subapp
+    from helloapp import myapp as subapp
     
     myapp=apps.push() #note if both files used apps(), they would share the same app
     
@@ -188,8 +188,56 @@ Python files in the same folder, all statics in the same statics folder and all 
 However the 'Utopia' was to allow the subapp to live in its
 own folder with self contained static and views folders.
 Simply adding an __init__.py to the sub app and adjusting the import allows the sub app to live in its own folder
-and a .gitignore can even keep the projects separate if you use Git.
+and a .gitignore line can even keep the projects separate if you use Git.
+The import simply becomes::
 
-But what about view and statics?
+    from sub/helloapp import myapp as subapp
+
+But what about views and statics?
 ********************************
-to be added
+By default bottle creates two template directories::
+
+   ['./', './views/']
+
+In reality this is only useful if bottle is started with the current directory
+set to the app. On some servers, this does not happen so these settings are of no use.
+If the app is accessed from 'pythonpath' for example, the the current directory
+could be anywhere.
+
+So sometimes the default settins work, in other cases they do not. Whether
+the settings work is largely deployment specific.
+
+Further, in the above 'hello' app example, even if the default settings work, we would
+want the hello app, which is in the 'sub' folder ro have the following paths::
+
+   [ './sub/', './sub/views/'
+     './', './views/'
+   ]
+Alternatively, with the alternate scheme mentioned in the 'utopia' secion the following could be desired::
+
+   [ './sub/', './views/sub/'
+     './', './views/'
+   ]
+
+We could modify the code for each deployment, but this is not desirable.
+Solution.
+*********
+But consider the custom settings in a single file for each deployment of the top
+level site, which the main app and each other app can import.
+Default values (as the above ['./', './views/'] are defined if the file is not present,
+but if the configuration file is present, then default values are overridden.
+
+The file is used to define a class for each app or sub app.  The goal is
+that when used by 'sub apps', the folders can vary to include the  
+with the following members and default values::
+
+  templates= ['./', './views/'] # the list of template directories for the app
+  appStatic: './static'   #the root folder setting for 'static' files for the app
+  siteStatic: './static'  #the root folder setting for 'static' files for the site
+  appPageUrl:
+  sitePageUrl:
+  appStaticUrl:
+  siteStaticIrl:
+
+
+
