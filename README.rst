@@ -222,24 +222,66 @@ Alternatively, with the alternate scheme mentioned in the 'utopia' secion the fo
    ]
 
 We could modify the code for each deployment, but this is not desirable.
+Goals
+*****
+
+
+The goals are:
+* minimise changes between deployments
+* support git based developments
+*
+
 Solution.
 *********
-But consider the custom settings in a single file for each deployment of the top
-level site, which the main app and each other app can import.
-Default values (as the above ['./', './views/'] are defined if the file is not present,
-but if the configuration file is present, then default values are overridden.
+A single file 'siteSettings.py', to override defaults meets all solution criteria.
+A 'site' object holdings all 'deployment' based settings is added to each 'app'.
 
-The file is used to define a class for each app or sub app.  The goal is
-that when used by 'sub apps', the folders can vary to include the  
-with the following members and default values::
+This object provides simple access to deployment specific data, and the object is built
+using defaults, overridden by default overrides from the 'Site' class in the siteSettings.py file.
 
-  templates= ['./', './views/'] # the list of template directories for the app
-  appStatic: './static'   #the root folder setting for 'static' files for the app
-  siteStatic: './static'  #the root folder setting for 'static' files for the site
-  appPageUrl:
-  sitePageUrl:
-  appStaticUrl:
-  siteStaticIrl:
+The default values produce the following 'site' objects, in a 'main' app or a 'sub' app added through 'merge' respectively.
 
+
+# field   #  siteSettings value      # value in default 'app' #  value in 'sub' app    #               
+#         #       (default)          #                        #                        #
+#---------#--------------------------#------------------------#------------------------#
+# views   #  .{path}/views/, .{path} # [ ./views , ./  ]      # [ ./sub/views, ./subs/ #
+#         #                          #                        #   , ./views , ./  ]    #
+#---------#--------------------------#------------------------#------------------------#
+# static  # .{path}/static/          #  ./static/             #  [ ./sub/static/       #
+#         #                          #                        #   ,  ./static/  ]      #
+
+The path is constructed from the python module path. So the results below
+assume the 'sub' app is imported as follows::
+
+    from sub import subapp
+
+To override these defaults, create a 'siteSettings' module in the main project folder
+and add a 'Site' class with values to over-ride the defaults:: 
+
+    class Site:
+       views = './views{path}/'  #all views in tree in views folder
+       
+    # example of deployment where current folder is not set
+    class Site:
+        views = '/home/theApp{path}/views/', '/home/theApp{path}/'
+        #project in 'theApp' folder   
+       
+Values are only required where the default is to be changed.
+    
+*Note this system is currently implemented through 'newMerge' and 'newStaticPage'*
+
+Name Conflicts.
+***************
+So why would the same name appear in both the main project and the sub 'app'?
+
+There are two possible reasons:
+ * the app holds a standin for what is hoped would be 'site global'
+ * the app holds a value designed to override a 'site global'
+ 
+In the first case, it is desired to look first in the 'global' location, and the opposite for the second case.
+Currently the code implements the 'global first' approach on the thought that if the app wants a unique
+value it can choose a unique name
+ 
 
 
