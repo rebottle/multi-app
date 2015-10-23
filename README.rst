@@ -254,8 +254,14 @@ The default values produce the following 'site' objects, in a 'main' app or a 's
 + appStatic + .{path}/static/          +  ./static/             +  [ ./sub/static/       +
 +           +                          +                        +   ,  ./static/  ]      +
 +-----------+--------------------------+------------------------+------------------------+
++ appURL    + {path}/                  +  /                     +  /sub                  +
++-----------+--------------------------+------------------------+------------------------+
 
-The path is constructed from the python module path. So the results below
+The {path} is constructed from the python module path, and then used with .format() to build values
+in instances of 'site'.  The 'site' attribute is passed to templates, so pages can use 
+the 'appURL' value to link to other pages or resources within the app.
+
+So the results above
 assume the 'sub' app is imported as follows::
 
     from sub import subapp
