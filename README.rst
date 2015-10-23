@@ -241,15 +241,19 @@ using defaults, overridden by default overrides from the 'Site' class in the sit
 
 The default values produce the following 'site' objects, in a 'main' app or a 'sub' app added through 'merge' respectively.
 
-
-# field   #  siteSettings value      # value in default 'app' #  value in 'sub' app    #               
-#         #       (default)          #                        #                        #
-#---------#--------------------------#------------------------#------------------------#
-# views   #  .{path}/views/, .{path} # [ ./views , ./  ]      # [ ./sub/views, ./subs/ #
-#         #                          #                        #   , ./views , ./  ]    #
-#---------#--------------------------#------------------------#------------------------#
-# static  # .{path}/static/          #  ./static/             #  [ ./sub/static/       #
-#         #                          #                        #   ,  ./static/  ]      #
++-----------+--------------------------+------------------------+------------------------+
+| field     +  siteSettings value      + value in default 'app' +  value in 'sub' app    +               
+|           +       (default)          +                        +                        +
++===========+==========================+========================+========================+
++ views     +  .{path}/views/, .{path} + [ ./views , ./  ]      + [ ./sub/views, ./subs/ +
++           +                          +                        +   , ./views , ./  ]    +
++-----------+--------------------------+------------------------+------------------------+
++ static    + .{path}/static/          +  ./static/             +  [ ./sub/static/       +
++           +                          +                        +   ,  ./static/  ]      +
++-----------+--------------------------+------------------------+------------------------+
++ appStatic + .{path}/static/          +  ./static/             +  [ ./sub/static/       +
++           +                          +                        +   ,  ./static/  ]      +
++-----------+--------------------------+------------------------+------------------------+
 
 The path is constructed from the python module path. So the results below
 assume the 'sub' app is imported as follows::
@@ -269,7 +273,8 @@ and add a 'Site' class with values to over-ride the defaults::
        
 Values are only required where the default is to be changed.
     
-*Note this system is currently implemented through 'newMerge' and 'newStaticPage'*
+*Note this system is currently implemented through 'newMerge' and method 'app.static_file'*
+*bottle could be upgraded with full backward compatibility*
 
 Name Conflicts.
 ***************
