@@ -196,7 +196,7 @@ The import simply becomes::
     from sub/helloapp import myapp as subapp
 
 But what about views and statics?
-********************************
+*********************************
 By default bottle creates two template directories::
 
    ['./', './views/']
@@ -215,6 +215,7 @@ want the hello app, which is in the 'sub' folder ro have the following paths::
    [ './sub/', './sub/views/'
      './', './views/'
    ]
+
 Alternatively, with the alternate scheme mentioned in the 'utopia' secion the following could be desired::
 
    [ './sub/', './views/sub/'
@@ -233,7 +234,18 @@ The goals are:
 
 Solution.
 *********
-A single file 'siteSettings.py', to override defaults meets all solution criteria.
+A single file 'siteSettings.py'  (or siteSettings.json or .conf), to override defaults
+meets all solution criteria.  Bottle already supports app configuration files, but these serve
+a different purpose.  Firstly these hold settings for each app as opposed to the 'site' which has an
+impact on *all* apps.  Secondly, they are intended to store all app settings, rather than only the
+site settings.  Specifically this means excluding the app config file through .gitignore is not desireable, whereas the
+site config file is specifically designed to be excluded through .gitignore.
+
+A very common use of the site config is that testing of a site will occur with one site config on a local developer machine,
+then move to another site config on a test host, before becomming live on a third live host site configuration.
+
+(The actual storage format and file name will depend on feedback as to what is popular)
+
 A 'site' object holdings all 'deployment' based settings is added to each 'app'.
 
 This object provides simple access to deployment specific data, and the object is built
@@ -248,18 +260,29 @@ The default values produce the following 'site' objects, in a 'main' app or a 's
 + views     +  .{path}/views/, .{path} + [ ./views , ./  ]      + [ ./sub/views, ./subs/ +
 +           +                          +                        +   , ./views , ./  ]    +
 +-----------+--------------------------+------------------------+------------------------+
-+ static    + .{path}/static/          +  ./static/             +  [ ./sub/static/       +
-+           +                          +                        +   ,  ./static/  ]      +
++ static    + .{path}/static/,         +  ./static/             +  [ ./static/           +
++           +                          +                        +   ,  ./sub/static/  ]  +
 +-----------+--------------------------+------------------------+------------------------+
-+ appStatic + .{path}/static/          +  ./static/             +  [ ./sub/static/       +
-+           +                          +                        +   ,  ./static/  ]      +
++ appStatic + .{path}/static/          +  ./static/             +  [ ./sub/static/   ]   +
 +-----------+--------------------------+------------------------+------------------------+
-+ appURL    + {path}/                  +  /                     +  /sub                  +
++ appURL    + {path}/                  +  /                     +  /subURL               +
 +-----------+--------------------------+------------------------+------------------------+
 
-The {path} is constructed from the python module path, and then used with .format() to build values
-in instances of 'site'.  The 'site' attribute is passed to templates, so pages can use 
-the 'appURL' value to link to other pages or resources within the app.
+Note::
+
+   The '/subURL'  in the URL is derived from the path in the 'merge'
+      app1.merge('/subURL',subapp)    
+   The './sub' in the static and views paths is derived from the python 'import'
+      from sub import subapp
+      
+    The name of the module (or folder) used for the subapp need not match the URL prefix
+    used with merge and for accessing the subapp. In this example 'subURL' as a prefix
+    within web links,  but accessing the 'sub' folder within the application folder tree.
+    
+    
+The folder or module {path} is constructed from the python module path, and then used with .format() to build values
+in instances of 'site'.  The 'appURL' attribute is passed to templates, so pages can use 
+the 'appURL' value to link to other pages or resources (including statics) referenced by the page.
 
 So the results above
 assume the 'sub' app is imported as follows::
@@ -270,7 +293,7 @@ To override these defaults, create a 'siteSettings' module in the main project f
 and add a 'Site' class with values to over-ride the defaults:: 
 
     class Site:
-       views = './views{path}/'  #all views in tree in views folder
+       views = './views{path}/'  #all views in tree within views folder
        
     # example of deployment where current folder is not set
     class Site:
@@ -294,5 +317,3 @@ In the first case, it is desired to look first in the 'global' location, and the
 Currently the code implements the 'global first' approach on the thought that if the app wants a unique
 value it can choose a unique name
  
-
-
